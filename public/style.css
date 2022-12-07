@@ -1,4 +1,11 @@
+html,
+body {
+    text-align: center;
+}
+
 
 #canvas {
     border: red 2px solid;
+
+    display: none;
 }
