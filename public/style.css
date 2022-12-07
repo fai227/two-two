@@ -1,20 +1,4 @@
-@charset "utf-8";
 
-@media(orientation: landscape) {
-    #box {
-        width: 90vh;
-        height: 90vh;
-    }
-
-}
-
-@media(orientation: portrait) {
-    #box {
-        width: 90vw;
-        height: 90vw;
-    }
-}
-
-#box {
+#canvas {
     border: red 2px solid;
 }
