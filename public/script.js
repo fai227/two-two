@@ -18,7 +18,7 @@ const column = 4;  //列
 
 // #region キャンバス関数
 let movingStartTime = null;
-const movingDuration = 2000;
+const movingDuration = 500;
 
 /**
  * ブロック移動の計算
@@ -33,11 +33,25 @@ function moveBlock(time) {
         let newBlocks = [[],[],[],[]];
         for(let y = 0; y < column; y++) {
             for(let x = 0; x < row; x++) {
-                let tmpValue = blocks[y][x].value;
-                blocks[y][x] = {};
-                blocks[y][x].value = tmpValue;
+                let tmpBlock = blocks[y][x];
+                if(tmpBlock.value != null) {
+                    let targetX = tmpBlock.x || x;
+                    let targerY = tmpBlock.y || y;
+
+                    newBlocks[targerY][targetX] = tmpBlock.value;
+                }
             }
         }
+
+        //適用
+        for(let y = 0; y < column; y++) {
+            for(let x = 0; x < row; x++) {
+                blocks[y][x] = {};
+                blocks[y][x].value = newBlocks[y][x];
+            }
+        }
+
+        console.log(newBlocks);
     }
     else {
         // 移動計算
@@ -122,7 +136,7 @@ function drawBlock(x, y, value, size) {
     context.arcTo(rightPosition, upPosition, leftPostion, upPosition, boxRadius);
     context.fill();
 
-    console.log(`(${x},${y})=${value}`);
+    //console.log(`(${x},${y})=${value}`);
 }
 
 function resetCanvasSize() {
