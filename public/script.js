@@ -2,17 +2,105 @@
 const canvas = document.getElementById("canvas");
 const context = canvas.getContext("2d");
 
-// ゲーム初期設定
+// 色の設定
+const blockColor = { r: 255, g: 220, b: 169 };
+const colorMax = 20;
+
 /**
- * 2次元配列
- * .value : 格納されている値
- * ?.x : 移動後のX座標
- * ?.y : 移動後のY座標
- * ?.wayX : 移動中のX座標
- * ?.wayY : 移動中のY座標
- * ?.new : true: 新規生成 false: 合体
+ * @property {number} x 移動先のX座標
+ * @property {number} y 移動先のY座標
+ * @property {number} wayX 移動中のX座標
+ * @property {number} wayY 移動中のY座標
+ * @property {number} previousX 移動前のX座標
+ * @property {number} previousY 移動前のY座標
  */
-let blocks = [[],[],[],[]];
+class Block {
+    constructor(targetX, targetY, value) {
+        this.targetX = targetX;
+        this.targetY = targetY;
+        this.value = value;
+
+        this.wayX = null;
+        this.wayY = null;
+        this.previousX = null;
+        this.previousY = null;
+
+        this.new = true;
+        this.size = 0;
+
+        return this;
+    }
+
+    getValue() {
+        return this.value;
+    }
+
+    setTargetPosition(x, y) {
+        this.targetX = x;
+        this.targetY = y;
+
+        return this;
+    }
+    getTargetPosition() {
+        return [this.targetX, this.targetY];
+    }
+
+
+    setWayPosition(x, y) {
+        this.wayX = x;
+        this.wayY = y;
+
+        return this;
+    }
+    getWayPosition() {
+        return [this.wayX, this.wayY];
+    }
+    deleteWayPosition() {
+        this.wayX = null;
+        this.wayY = null;
+
+        return this;
+    }
+
+    setPreviousPosition(x, y) {
+        this.previousX = x;
+        this.previousY = y;
+
+        return this;
+    }
+    getPreviousPosition() {
+        return [this.previousX, this.previousY];
+    }
+    hasPreviousPosition() {
+        return this.previousX != null && this.previousY != null;
+    }
+    deletePreviousPosition() {
+        this.previousX = null;
+        this.previousY = null;
+
+        return this;
+    }
+
+    getSize() {
+        return this.size;
+    }
+    setSize(size) {
+        this.size = size;
+        return this;
+    }
+
+    isNew() {
+        return this.new;
+    }
+    setOld() {
+        this.new = false;
+        this.size = 1;
+        return this;
+    }
+}
+let blocks = [];
+
+// グリッドサイズ
 const row = 4;  //行
 const column = 4;  //列
 
@@ -26,85 +114,95 @@ const movingDuration = 500;
  */
 function moveBlock(time) {
     // 移動終了時
-    if(movingStartTime + movingDuration < time) {
-        movingStartTime = null;
+    if (movingStartTime + movingDuration < time) {
+        movingStartTime = undefined;
 
-        // 移動後の状態を作成
-        let newBlocks = [[],[],[],[]];
-        for(let y = 0; y < column; y++) {
-            for(let x = 0; x < row; x++) {
-                let tmpBlock = blocks[y][x];
-                if(tmpBlock.value != null) {
-                    let targetX = tmpBlock.x || x;
-                    let targerY = tmpBlock.y || y;
+        // 位置移動
+        let newBlocks = [];  // 位置がかぶっている要素計算用
+        let deleteBlocks = [];  // 削除する要素を入れるため
 
-                    newBlocks[targerY][targetX] = tmpBlock.value;
+        blocks.forEach((block, i) => {
+            block.deleteWayPosition().deletePreviousPosition().setOld();  // いらないデータの削除
+            let [targetX, targetY] = block.getTargetPosition();
+
+            // 配列の位置を計算
+            let index = targetY * row + targetX;
+            let thereBlockIndex = newBlocks[index];
+
+            // 同じ場所にブロックが重なる場合
+            if (thereBlockIndex != undefined) {
+                let thereBlock = blocks[thereBlockIndex];
+
+                // 数値を比較
+                let dif = block.getValue() - thereBlock.getValue();
+                if (dif == 0) {  // どちらも削除
+                    deleteBlocks.push(thereBlock, block);
+                }
+                else if (dif > 0) {  // 上書き
+                    newBlocks[index] = i;  // 上書き
+                    deleteBlocks.push(thereBlock);  // 削除
+                }
+                else {  // 小さいときはブロックを削除
+                    deleteBlocks.push(block);
                 }
             }
-        }
-
-        //適用
-        for(let y = 0; y < column; y++) {
-            for(let x = 0; x < row; x++) {
-                blocks[y][x] = {};
-                blocks[y][x].value = newBlocks[y][x];
+            // 新しく設定する際、ブロック番号を設定
+            else {
+                newBlocks[index] = i;
             }
-        }
+        })
 
-        console.log(newBlocks);
+        // 削除リストを見て削除
+        blocks = blocks.filter(block => !deleteBlocks.includes(block));
     }
+    // 移動中
     else {
-        // 移動計算
-        for(let y = 0; y < column; y++) {
-            for(let x = 0; x < row; x++) {
-                if(blocks[y][x].value != null) {  // ブロックがある時
-                    if(blocks[y][x].x != null || blocks[y][x].y != null) {  // 移動するとき
-                        let targetX = blocks[y][x].x || x;
-                        let targerY = blocks[y][x].y || y;
-    
-                        // 位置計算
-                        blocks[y][x].wayX = x + (targetX - x) / movingDuration * (time - movingStartTime);
-                        blocks[y][x].wayY = y + (targerY - y) / movingDuration * (time - movingStartTime);
-    
-                        // 新しく出来たブロックの場合、サイズ計算
-                        if(blocks[y][x].new != null) {
-                            blocks[y][x].size = (time - movingStartTime) / movingDuration;
-                        }  
-                    }
+        blocks.forEach(block => {  // 移動計算
+            let timeRatio = (time - movingStartTime) / movingDuration;
+            if (block.hasPreviousPosition()) {
+                let [x, y] = block.getTargetPosition();
+                let [previousX, previousY] = block.getPreviousPosition();
+
+                let wayX = previousX + (x - previousX) * timeRatio;
+                let wayY = previousY + (y - previousY) * timeRatio;
+
+                block.setWayPosition(wayX, wayY);
+
+                // 新しいブロックの時はサイズ計算
+                if (block.isNew()) {
+                    block.setSize(timeRatio);
                 }
             }
-        }
+        });
     }
 
     // 描画
     drawCanvas();
 
     // 移動中は描画を続ける
-    if(movingStartTime != null) {
-        requestAnimationFrame(moveBlock);        
+    if (movingStartTime != null) {
+        requestAnimationFrame(moveBlock);
     }
 }
 
 /**
- * blockに格納されている値を参照しキャンバスを表示
+ * blocksに格納されている値を参照しキャンバスを表示
  */
 function drawCanvas() {
     context.clearRect(0, 0, canvas.width, canvas.height);
-    for(let y = 0; y < column; y++) {
-        for(let x = 0; x < row; x++) {
-            if(blocks[y][x].value != null) {
-                let posX = blocks[y][x].wayX || x;
-                let posY = blocks[y][x].wayY || y;
-                let size = blocks[y][x].size || 1;
-                
-                drawBlock(posX, posY, blocks[y][x].value, size);
-            }
-        }
-    }
+    blocks.forEach(block => {
+        let [x, y] = block.hasPreviousPosition() ? block.getWayPosition() : block.getTargetPosition();
+        let value = block.getValue();
+        let size = block.getSize();
+
+        drawBlock(x, y, value, size);
+    });
 }
 
 const boxSizePercentage = 0.9;
 const roundPercentage = 0.05;
+const textWidthPercentage = 0.9;
+const textHeightPercentage = 0.5;
 /**
  * ブロックの表示
  * @param {number} x 表示するブロックのX座標
@@ -113,7 +211,7 @@ const roundPercentage = 0.05;
  * @param {number} size 表示するブロックのサイズ（0<=x<=1）
  */
 function drawBlock(x, y, value, size) {
-    if(size <= 0) {
+    if (size <= 0) {
         return;
     }
 
@@ -121,31 +219,44 @@ function drawBlock(x, y, value, size) {
     const boxRadius = halfBoxSize * 2 * roundPercentage;
 
     const centerX = canvas.width / row * (x + 0.5);
-    const centerY = canvas.height / column * (y + 0.5);    
+    const centerY = canvas.height / column * (y + 0.5);
 
     const leftPostion = centerX - halfBoxSize;
     const rightPosition = centerX + halfBoxSize;
     const upPosition = centerY - halfBoxSize;
     const downPosition = centerY + halfBoxSize;
 
+
+    // ボックス描画
     context.beginPath();
-    context.moveTo(rightPosition, upPosition);
+    context.moveTo(centerX, upPosition);
     context.arcTo(leftPostion, upPosition, leftPostion, downPosition, boxRadius);
     context.arcTo(leftPostion, downPosition, rightPosition, downPosition, boxRadius);
     context.arcTo(rightPosition, downPosition, rightPosition, upPosition, boxRadius);
     context.arcTo(rightPosition, upPosition, leftPostion, upPosition, boxRadius);
+    context.lineTo(centerX, upPosition);
+    context.fillStyle = getColor(value);
     context.fill();
+    context.stroke();  // 線描画
 
-    //console.log(`(${x},${y})=${value}`);
+
+    // 数字描画
+    let displayValue = 1;
+    for (let i = 0; i < value - 1; i++) {
+        displayValue *= 2;
+    }
+    const length = String(displayValue).length;
+    context.fillStyle = "white";
+    context.fillText(displayValue, centerX, centerY);
 }
 
+const lineWidthPercentage = 0.01;
 function resetCanvasSize() {
-    if (window.innerHeight > window.innerWidth) {
-        canvas.width = canvas.height = window.innerWidth * 0.9;
-    }
-    else {
-        canvas.width = canvas.height = window.innerHeight * 0.9;
-    }
+    let size = window.innerHeight;
+    if (window.innerHeight > window.innerWidth) size = window.innerWidth;
+
+    canvas.width = canvas.height = size * 0.9;
+    context.lineWidth = size * lineWidthPercentage;
 
     drawCanvas();
 }
@@ -164,32 +275,32 @@ function touchEnd(e) {
     }
 
     // 移動中なら何も行わない
-    if(movingStartTime != null) {
+    if (movingStartTime != null) {
         return;
     }
 }
 function keyDown(e) {
     // 移動中なら何も行わない
-    if(movingStartTime != null) {
+    if (movingStartTime != null) {
         return;
     }
 
-    switch(e.key) {
+    switch (e.key) {
         case "ArrowRight":
             e.preventDefault();
             moveRight();
             break;
-        
+
         case "ArrowLeft":
             e.preventDefault();
             moveLeft();
             break;
 
         case "ArrowUp":
-        e.preventDefault();
-        moveUp();
+            e.preventDefault();
+            moveUp();
             break;
-        
+
         case "ArrowDown":
             e.preventDefault();
             moveDown();
@@ -200,70 +311,65 @@ function keyDown(e) {
 
 // #region 移動関数
 function moveRight() {
-    // 状態をコピー
-    let newBlocks = [[],[],[],[]];
-    for(let y = 0; y < column; y++) {
-        for(let x = 0; x < row; x++) {
-            newBlocks[y][x] = blocks[y][x].value; 
-        }
-    }
+    // ブロックを左から順にソートする
+    blocks.sort((a, b) => {
+        return b.getTargetPosition()[0] - a.getTargetPosition()[0];
+    });
 
-    // 右からチェックしていき右にずらす
-    for(let y = 0; y < column; y++) {
-        for(let x = row - 1; x > 0; x--) {
-            if(newBlocks[y][x] == null) {
-                for(let i = x - 1; i >= 0; i--) {
-                    if(newBlocks[y][i] != null) {
-                        [newBlocks[y][x], newBlocks[y][i]] = [newBlocks[y][i], newBlocks[y][x]]  // 入れ替え
-                        blocks[y][i].x = x;
+    checkBlocks(1, 0);
 
-                        // 移動後の右が同じ数値なら合体
-                        if(x + 1 < row) {
-                            if(newBlocks[y][x] == newBlocks[y][x + 1]) {
-                                (blocks[y][x].x)++;  // 移動先を合わせる
-                                blocks[y][x+1].new = false;  // 合体に設定
-
-                                newBlocks[y][x] = null;  // 移動するやつを消す
-                                newBlocks[y][x + 1] *= 2; //合体する数値を2倍
-                            }
-                        }
-
-                        break;
-                    }
-                }
-            }
-        }
-    }
-
-    beforeMove(newBlocks);
+    beforeMove();
 }
 function moveLeft() {
+    // ブロックを左から順にソートする
+    blocks.sort((a, b) => {
+        return a.getTargetPosition()[0] - b.getTargetPosition()[0];
+    });
+
+    checkBlocks(-1, 0);
 
     beforeMove();
 }
 function moveUp() {
+    // ブロックを下から順にソートする
+    blocks.sort((a, b) => {
+        return a.getTargetPosition()[1] - b.getTargetPosition()[1];
+    });
+
+    checkBlocks(0, -1);
 
     beforeMove();
 }
 function moveDown() {
+    // ブロックを下から順にソートする
+    blocks.sort((a, b) => {
+        return b.getTargetPosition()[1] - a.getTargetPosition()[1];
+    });
+
+    checkBlocks(0, 1);
 
     beforeMove();
 }
-function beforeMove(newBlocks) {
-    // 空いているブロックを探す
-    let emptyBlockList = [];
-    for(let y = 0; y < column; y++) {
-        for(let x = 0; x < row; x++) {
-            if(newBlocks[y][x] == null) {
-                emptyBlockList.push({x: x, y: y});
-            }
-        }
+function beforeMove() {
+    // 新しいブロックの生成
+    let blockArray = [];  // 0~16の配列作成
+    for (let i = 0; i < row * column; i++) {
+        blockArray.push(i);
     }
+    blocks.forEach(block => {
+        let [x, y] = block.getTargetPosition();
+        let index = y * row + x;
 
-    // 空いているブロックの中に新しく追加
-    let newBlocksPlace = getRandomElement(emptyBlockList);
-    blocks[newBlocksPlace.y][newBlocksPlace.x].value = 1;
-    blocks[newBlocksPlace.y][newBlocksPlace.x].new = true;
+        let arrayIndex = blockArray.indexOf(index);
+        if (arrayIndex >= 0) {
+            blockArray.splice(arrayIndex, 1);
+        }
+    });
+
+    let index = getRandomElement(blockArray);
+    let x = index % row;
+    let y = Math.floor(index / row);
+    blocks.push(new Block(x, y, getNewBlockValue()).setPreviousPosition(x, y));
 
     // 時間を設定し移動開始
     movingStartTime = performance.now();
@@ -271,6 +377,95 @@ function beforeMove(newBlocks) {
 }
 // #endregion
 
+// #region ゲーム関連関数
+function checkBlocks(moveX, moveY) {
+    let newBlocks = [];  // 新しいブロック設置用配列
+    let movedBlocks = [];  // 反映用のリストを生成
+
+    function setPosition(block, x, y, value) {
+        block.setTargetPosition(x, y);
+        movedBlocks[y][x] = value;
+    }
+
+    for (let i = 0; i < column; i++) movedBlocks.push([]);
+
+    // ブロックを1つずつ見ていく
+    blocks.forEach(block => {
+        let [x, y] = block.getTargetPosition();
+        block.setPreviousPosition(x, y);
+        let value = block.getValue();
+
+        // 1つずつ進めていく
+        while (true) {
+            let nextPositionX = x + moveX;
+            let nextPositionY = y + moveY;
+
+            // 確認できない範囲になった際は終了
+            if (nextPositionX < 0 || nextPositionX >= row || nextPositionY < 0 || nextPositionY >= column) {
+                setPosition(block, x, y, value);
+                break;
+            }
+
+            // 右に数字がある場合は終了
+            let targetValue = movedBlocks[nextPositionY][nextPositionX];
+            if (targetValue != undefined) {
+                // 右と同じ場合、合体
+                if (targetValue == value) {
+                    let newValue = value + 1;
+                    setPosition(block, nextPositionX, nextPositionY, newValue);
+                    checkNewValue(newValue);
+                    newBlocks.push(new Block(nextPositionX, nextPositionY, newValue));
+                }
+                // 右と違う場合は止める
+                else {
+                    setPosition(block, x, y, value);
+                }
+
+                break;
+            }
+
+            // 次に向けて移動
+            x += moveX;
+            y += moveY;
+        }
+    });
+
+    // 新しいブロックを設置
+    newBlocks.forEach(newBlock => {
+        blocks.push(newBlock);
+    });
+}
+
+let score = 1;
+function checkNewValue(value) {
+    if (score < value) {
+        score = value;
+        document.getElementById("score").innerHTML = score;
+
+        // ランキング反映
+        if (score > 3) {
+            console.log("ランキング反映する必要あり");
+        }
+    }
+}
+
+function getNewBlockValue() {
+    let rand = Math.random();
+    let ratio = 0;
+    for (let i = 1; i < score; i++) {
+        let x = 1;
+        for (let s = 0; s < i; s++) {
+            x *= 2;
+        }
+        ratio += 1 / x;
+
+        if (rand < ratio) {
+            return i;
+        }
+    }
+    return score;
+}
+// #endregion
 
 
 function main() {
@@ -282,23 +477,28 @@ function main() {
     //キー設定
     document.addEventListener("keydown", keyDown);
 
-    //ゲーム初期設定
-    for(let y = 0; y < column; y++) {
-        for(let x = 0; x < row; x++) {
-            blocks[y][x] = {};
-        }
-    }
-    blocks[0][0].value = 1;
-
     //キャンバス設定
     window.onresize = resetCanvasSize;
     canvas.style.display = "inline-block";
     resetCanvasSize();
+    beforeMove();
 }
 main();
 
 // #region 便利関数
 function getRandomElement(array) {
     return array[Math.floor(Math.random() * array.length)];
+}
+
+
+function getColor(value) {
+    let num = (value > colorMax - 1) ? colorMax : value;
+    let ratio = 1 - num / colorMax;
+
+    let r = Math.floor(blockColor.r * ratio);
+    let g = Math.floor(blockColor.g * ratio);
+    let b = Math.floor(blockColor.b * ratio);
+
+    return `rgb(${r},${g},${b})`;
 }
 // #endregion
