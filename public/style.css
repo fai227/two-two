@@ -1,11 +1,26 @@
-html,
-body {
-    text-align: center;
+@font-face {
+    font-family: "MainFont";
+    src: url(./font.ttf);
 }
 
 
-#canvas {
-    border: red 2px solid;
+html,
+body {
+    text-align: center;
+    font-family: 'MainFont';
+    background-color: #FCF9BE;
+}
 
+header {
+    font-size: large;
+}
+
+#canvas {
+    border-radius: min(1vw, 1vh);
+    border-width: min(1vw, 1vh);
+    border-style: solid;
+    border-color: black;
+
+    background-color: #E8F3D6;
     display: none;
 }

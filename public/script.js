@@ -239,15 +239,20 @@ function drawBlock(x, y, value, size) {
     context.fill();
     context.stroke();  // 線描画
 
-
-    // 数字描画
+    // 数字描画用計算
     let displayValue = 1;
     for (let i = 0; i < value - 1; i++) {
         displayValue *= 2;
     }
-    const length = String(displayValue).length;
+    let fontSize = 100;
+    fontSize *= size;
+
+    // 数字描画
+    const textWidth = halfBoxSize * 2 * textWidthPercentage;
     context.fillStyle = "white";
-    context.fillText(displayValue, centerX, centerY);
+    context.font = `${fontSize}px 'MainFont'`;
+    context.strokeText(displayValue,centerX, centerY, textWidth);
+    context.fillText(displayValue, centerX, centerY, textWidth);
 }
 
 const lineWidthPercentage = 0.01;
@@ -255,8 +260,11 @@ function resetCanvasSize() {
     let size = window.innerHeight;
     if (window.innerHeight > window.innerWidth) size = window.innerWidth;
 
-    canvas.width = canvas.height = size * 0.9;
+    canvas.width = canvas.height = size * 0.8;
     context.lineWidth = size * lineWidthPercentage;
+
+    context.textAlign = "center";
+    context.textBaseline = "middle";
 
     drawCanvas();
 }
@@ -468,7 +476,7 @@ function getNewBlockValue() {
 // #endregion
 
 
-function main() {
+async function main() {
     // タップ設定
     canvas.addEventListener("pointerdown", touchStart);
     canvas.addEventListener("pointerup", touchEnd);
@@ -480,6 +488,7 @@ function main() {
     //キャンバス設定
     window.onresize = resetCanvasSize;
     canvas.style.display = "inline-block";
+
     resetCanvasSize();
     beforeMove();
 }
