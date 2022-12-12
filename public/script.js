@@ -104,6 +104,8 @@ let blocks = [];
 const row = 4;  //行
 const column = 4;  //列
 
+const rankingURL = location.href + "ranking";
+
 // #region キャンバス関数
 let movingStartTime = null;
 const movingDuration = 500;
@@ -445,13 +447,23 @@ function checkBlocks(moveX, moveY) {
 }
 
 let score = 1;
-function checkNewValue(value) {
+async function checkNewValue(value) {
     if (score < value) {
         score = value;
         document.getElementById("score").innerHTML = score;
 
         // ランキング反映
         if (score > 3) {
+            let result = fetch(
+                rankingURL,
+                {
+                    method: 'POST', 
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: `{"value":${score},"name":"${username}","time":${Math.floor(performance.now()/1000)}}`
+                }
+            )
             console.log("ランキング反映する必要あり");
         }
     }
@@ -475,6 +487,16 @@ function getNewBlockValue() {
 }
 // #endregion
 
+// #region ランキング表示関数
+async function setRanking(data) {
+    // 引数がないときは取得
+    if(data == undefined) {
+        let result = await fetch(rankingURL);
+        data = await result.json();
+    }
+    console.log(data);
+}
+
 
 async function main() {
     // タップ設定
@@ -482,12 +504,21 @@ async function main() {
     canvas.addEventListener("pointerup", touchEnd);
     canvas.addEventListener("pointerleave", touchEnd);
 
-    //キー設定
+    // キー設定
     document.addEventListener("keydown", keyDown);
 
-    //キャンバス設定
+    // キャンバス設定
     window.onresize = resetCanvasSize;
     canvas.style.display = "inline-block";
+
+    // name設定
+    username = localStorage.getItem("name");
+    while(username == undefined) {
+        username = prompt("ユーザー名を入力してください。");
+    }
+
+    // 履歴から取得
+    console.log("履歴から取得");
 
     resetCanvasSize();
     beforeMove();
