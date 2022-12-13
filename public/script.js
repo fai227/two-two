@@ -204,7 +204,7 @@ function drawCanvas() {
 const boxSizePercentage = 0.9;
 const roundPercentage = 0.05;
 const textWidthPercentage = 0.9;
-const textHeightPercentage = 0.5;
+const textHeightPercentage = 0.75;
 /**
  * ブロックの表示
  * @param {number} x 表示するブロックのX座標
@@ -246,10 +246,9 @@ function drawBlock(x, y, value, size) {
     for (let i = 0; i < value - 1; i++) {
         displayValue *= 2;
     }
-    let fontSize = 100;
-    fontSize *= size;
 
     // 数字描画
+    const fontSize = halfBoxSize * 2 * textHeightPercentage;
     const textWidth = halfBoxSize * 2 * textWidthPercentage;
     context.fillStyle = "white";
     context.font = `${fontSize}px 'MainFont'`;
@@ -262,7 +261,7 @@ function resetCanvasSize() {
     let size = window.innerHeight;
     if (window.innerHeight > window.innerWidth) size = window.innerWidth;
 
-    canvas.width = canvas.height = size * 0.8;
+    canvas.width = canvas.height = size * 0.9;
     document.getElementById("ranking").style.width = canvas.width + "px";
     context.lineWidth = size * lineWidthPercentage;
 
