@@ -18,6 +18,11 @@ p {
 #canvas {
     background-color: #E8F3D6;
     display: none;
+
+    background-image: 
+        linear-gradient(90deg, transparent calc(100% - 1px), black 100%),
+        linear-gradient(0deg, transparent calc(100% - 1px), black 100%);
+    background-size: 20% 20%;
 }
 
 #ranking {

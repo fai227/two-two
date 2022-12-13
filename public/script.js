@@ -101,8 +101,8 @@ class Block {
 let blocks = [];
 
 // グリッドサイズ
-const row = 4;  //行
-const column = 4;  //列
+let row = 5;  //行
+let column = 5;  //列
 
 const rankingURL = location.href + "ranking";
 
