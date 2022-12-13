@@ -263,6 +263,7 @@ function resetCanvasSize() {
     if (window.innerHeight > window.innerWidth) size = window.innerWidth;
 
     canvas.width = canvas.height = size * 0.8;
+    document.getElementById("ranking").style.width = canvas.width + "px";
     context.lineWidth = size * lineWidthPercentage;
 
     context.textAlign = "center";
@@ -275,10 +276,14 @@ function resetCanvasSize() {
 // #region タッチ・キー判定
 let positions = {};
 function touchStart(e) {
-    positions.x = e.clientX;
-    positions.y = e.clientY;
+    e.preventDefault();
+
+    positions.x = e.changedTouches[0].clientX;
+    positions.y = e.changedTouches[0].clientY;
 }
 function touchEnd(e) {
+    e.preventDefault();
+
     // タッチが始まってなかったら何も行わない
     if (!positions) {
         return;
@@ -288,6 +293,23 @@ function touchEnd(e) {
     if (movingStartTime != null) {
         return;
     }
+
+    let difX = e.changedTouches[0].clientX - positions.x;
+    let difY = e.changedTouches[0].clientY - positions.y;
+
+    let squereSize = (canvas.width / 5); squereSize *= squereSize;
+    if(difX * difX + difY * difY < squereSize) return;
+
+    // 左右移動
+    if(Math.abs(difX) > Math.abs(difY)) {
+        (difX > 0) ? moveRight() : moveLeft();
+    }
+    // 上下移動
+    else {
+        (difY > 0) ? moveDown() : moveUp();        
+    }
+
+    positions = {};
 }
 function keyDown(e) {
     // 移動中なら何も行わない
@@ -376,6 +398,13 @@ function beforeMove() {
         }
     });
 
+    // ゲームオーバー判定
+    if(blockArray.length == 0) {
+        alert(`ゲーム終了\nScore: ${score}`);
+        localStorage.removeItem("data");
+        location.reload();
+    }
+
     let index = getRandomElement(blockArray);
     let x = index % row;
     let y = Math.floor(index / row);
@@ -454,7 +483,7 @@ async function checkNewValue(value) {
 
         // ランキング反映
         if (score > 3) {
-            let result = fetch(
+            let result = await fetch(
                 rankingURL,
                 {
                     method: 'POST', 
@@ -464,7 +493,8 @@ async function checkNewValue(value) {
                     body: `{"value":${score},"name":"${username}","time":${Math.floor(performance.now()/1000)}}`
                 }
             )
-            console.log("ランキング反映する必要あり");
+            let jsonData = await result.json();
+            setRanking(jsonData);
         }
     }
 }
@@ -485,6 +515,20 @@ function getNewBlockValue() {
     }
     return score;
 }
+
+function getName() {
+    if(username == undefined) {
+        username = prompt("ユーザー名を英数字で入力してください。");
+    }
+    while(!username || !username.match(/^[A-Za-z0-9]*$/)) {
+        username = prompt("半角英数字で入力してください。（すべて大文字で表示されます。）");
+    }
+    localStorage.setItem("name", username);
+}
+function resetName() {
+    username = undefined;
+    getName();
+}
 // #endregion
 
 // #region ランキング表示関数
@@ -494,15 +538,28 @@ async function setRanking(data) {
         let result = await fetch(rankingURL);
         data = await result.json();
     }
-    console.log(data);
+    
+    // ヘッダー設置
+    let element = document.getElementById("ranking");
+    element.innerHTML = "<h1>ranking</h1>";
+
+    // ランキング表示
+    data.forEach((datum, i) => {
+        let result = `<div id="ranking" class="border rank${i+1}">`;
+        result += `<h2>${i+1}. ${datum.name}</h2>`;
+        result += `<p>score: ${datum.value}&nbsp;&nbsp;&nbsp;&nbsp;(${datum.time} sec)</p>`;
+        result += "</div>";
+
+        element.innerHTML += result;
+    });
 }
+// #endregion
 
 
 async function main() {
     // タップ設定
-    canvas.addEventListener("pointerdown", touchStart);
-    canvas.addEventListener("pointerup", touchEnd);
-    canvas.addEventListener("pointerleave", touchEnd);
+    canvas.addEventListener("touchstart", touchStart);
+    canvas.addEventListener("touchend", touchEnd);
 
     // キー設定
     document.addEventListener("keydown", keyDown);
@@ -513,12 +570,15 @@ async function main() {
 
     // name設定
     username = localStorage.getItem("name");
-    while(username == undefined) {
-        username = prompt("ユーザー名を入力してください。");
+    if(username == undefined) {
+        getName();
     }
-
+    
     // 履歴から取得
     console.log("履歴から取得");
+
+    // ランキング表示
+    setRanking();
 
     resetCanvasSize();
     beforeMove();
