@@ -106,7 +106,7 @@ let score = 0;
 let row = 4;  //行
 let column = 4;  //列
 
-const rankingURL = location.href + "ranking";
+const rankingURL = location.href.split("?")[0] + "ranking";
 
 // #region キャンバス関数
 let movingStartTime = null;
