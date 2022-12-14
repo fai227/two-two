@@ -9,10 +9,44 @@ body {
     text-align: center;
     font-family: 'MainFont';
     background-color: #FCF9BE;
+
+    user-select:none;
+-webkit-user-select:none;
+-moz-user-select:none;
+-khtml-user-select:none;
+-webkit-user-drag:none;
+-khtml-user-drag:none;
 }
 
 p {
     font-size: large;
+}
+
+.scoreText {
+    position: relative;
+}
+
+#addedScore {
+    position: absolute;
+    opacity: 0;
+
+    color: yellow;
+    -webkit-text-stroke: 1px black;
+}
+.animation {
+    animation: moveUp 1s ease-out forwards;
+}
+@keyframes moveUp {
+    0% {
+        bottom: -5vh;
+        opacity: 100%;
+    }
+    80% {
+        bottom: 0vh;
+    }
+    100% {
+        opacity: 0%;
+    }
 }
 
 #canvas {
@@ -25,10 +59,12 @@ p {
     background-size: 25% 25%;
 }
 
-#ranking {
+.ranking {
     margin-top: 5vh;
     display: inline-block;
     background-color: #FFDCA9;
+
+    position: relative;
 }
 
 #ranking > div {
@@ -59,6 +95,19 @@ p {
 }
 #button:active {
     background-color: #a97451;
+}
+
+#resetButton {
+    position: absolute ;
+    right: 0.25vw;
+    top: 0.25vh;
+
+    width: min(5vw, 5vh);
+    background-color: white;
+}
+
+#resetButton:active {
+    background-color: gray;
 }
 
 .rank1 {

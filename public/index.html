@@ -13,12 +13,19 @@
 <body>
     <h1>two-two</h1>
     <main>
-        <h2>score: <span id="score">0</span></h2>
+        <h2 class="scoreText">
+            score: <span id="score">0</span><span id="addedScore">+10</span>
+        </h2>
         <div>
             <canvas id="canvas" class="border"></canvas>
+            <p style="display: none;" id="pcControll"><b>←↑↓→</b> to move panels.</p>
+            <p style="display: none;" id="spControll">Drag canvas to move panels.</p>
         </div>
-        <div id="ranking" class="border">
-            <p>Loading Ranking...</p>
+        <div class="border ranking" id="rankingParent">
+            <span id="ranking">
+                <p>Loading Ranking...</p>
+            </span>
+            <img src="./reset.svg" alt="./reset.svg" id="resetButton" class="border" onclick="setRanking()">
         </div>
         <div>
             <div class="border" onclick="resetName()" id="button">Reset Name</div>

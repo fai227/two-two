@@ -264,7 +264,7 @@ function resetCanvasSize() {
     if (window.innerHeight > window.innerWidth) size = window.innerWidth;
 
     canvas.width = canvas.height = size * 0.9;
-    document.getElementById("ranking").style.width = canvas.width + "px";
+    document.getElementById("rankingParent").style.width = canvas.width + "px";
     context.lineWidth = size * lineWidthPercentage;
 
     context.textAlign = "center";
@@ -500,6 +500,11 @@ function addScore(value) {
 
     score += point;
     document.getElementById("score").innerHTML = score;
+
+    // アニメーション実行
+    let animationElement = document.getElementById("addedScore");
+    animationElement.innerHTML = `+${point}`;
+    animationElement.classList.add("animation");
 }
 
 function getNewBlockValue() {
@@ -578,8 +583,20 @@ async function main() {
         getName();
     }
     
-    // 履歴から取得
-    console.log("履歴から取得");
+    // 操作方法を表示
+    if(navigator.userAgent.match(/(iPhone|iPod|Android.*Mobile)/i)){
+        // スマホ（iPhone・Androidスマホ）の場合の処理を記述
+        document.getElementById("spControll").style.display = "block";
+    }else{
+        // PC・タブレットの場合の処理を記述
+        document.getElementById("pcControll").style.display = "block";
+    }
+
+    // スコア追加時のアニメーション初期設定
+    let animationElement = document.getElementById("addedScore");
+    animationElement.addEventListener("animationend", () => {
+        animationElement.classList.remove("animation");
+    })
 
     // ランキング表示
     setRanking();
