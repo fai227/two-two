@@ -100,15 +100,17 @@ class Block {
 }
 let blocks = [];
 
+let score = 0;
+
 // グリッドサイズ
-let row = 5;  //行
-let column = 5;  //列
+let row = 4;  //行
+let column = 4;  //列
 
 const rankingURL = location.href + "ranking";
 
 // #region キャンバス関数
 let movingStartTime = null;
-const movingDuration = 500;
+const movingDuration = 300;
 
 /**
  * ブロック移動の計算
@@ -399,9 +401,7 @@ function beforeMove() {
 
     // ゲームオーバー判定
     if(blockArray.length == 0) {
-        alert(`ゲーム終了\nScore: ${score}`);
-        localStorage.removeItem("data");
-        location.reload();
+        finishGame();
     }
 
     let index = getRandomElement(blockArray);
@@ -412,6 +412,21 @@ function beforeMove() {
     // 時間を設定し移動開始
     movingStartTime = performance.now();
     moveBlock();
+}
+async function finishGame() {
+    alert(`ゲーム終了\nScore: ${score}`);
+    let result = await fetch(
+        rankingURL,
+        {
+            method: 'POST', 
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: `{"score":${score},"name":"${username}","time":${Math.floor(performance.now()/1000)}}`
+        }
+    );
+    localStorage.removeItem("data");
+    location.reload();
 }
 // #endregion
 
@@ -451,8 +466,8 @@ function checkBlocks(moveX, moveY) {
                 if (targetValue == value) {
                     let newValue = value + 1;
                     setPosition(block, nextPositionX, nextPositionY, newValue);
-                    checkNewValue(newValue);
                     newBlocks.push(new Block(nextPositionX, nextPositionY, newValue));
+                    addScore(newValue);
                 }
                 // 右と違う場合は止める
                 else {
@@ -474,34 +489,24 @@ function checkBlocks(moveX, moveY) {
     });
 }
 
-let score = 1;
-async function checkNewValue(value) {
-    if (score < value) {
-        score = value;
-        document.getElementById("score").innerHTML = score;
+let maxValue = 1;
+function addScore(value) {
+    if(value > maxValue) maxValue = value;
 
-        // ランキング反映
-        if (score > 3) {
-            let result = await fetch(
-                rankingURL,
-                {
-                    method: 'POST', 
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: `{"value":${score},"name":"${username}","time":${Math.floor(performance.now()/1000)}}`
-                }
-            )
-            let jsonData = await result.json();
-            setRanking(jsonData);
-        }
+    let point = 1;
+    for(let i = 0; i < value - 1; i++) {
+        point *= 2;
     }
+
+    score += point;
+    document.getElementById("score").innerHTML = score;
 }
 
 function getNewBlockValue() {
+    let array = [];
     let rand = Math.random();
     let ratio = 0;
-    for (let i = 1; i < score; i++) {
+    for (let i = 1; i < maxValue; i++) {
         let x = 1;
         for (let s = 0; s < i; s++) {
             x *= 2;
@@ -512,7 +517,7 @@ function getNewBlockValue() {
             return i;
         }
     }
-    return score;
+    return maxValue || 1;
 }
 
 function getName() {
@@ -546,7 +551,7 @@ async function setRanking(data) {
     data.forEach((datum, i) => {
         let result = `<div id="ranking" class="border rank${i+1}">`;
         result += `<h2>${i+1}. ${datum.name}</h2>`;
-        result += `<p>score: ${datum.value}&nbsp;&nbsp;&nbsp;&nbsp;(${datum.time} sec)</p>`;
+        result += `<p>score: ${datum.score}&nbsp;&nbsp;&nbsp;&nbsp;(${datum.time} sec)</p>`;
         result += "</div>";
 
         element.innerHTML += result;

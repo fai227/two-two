@@ -20,8 +20,8 @@ app.post("/ranking", (req, res) => {
     let data = req.body;
 
     // undefined チェック
-    if(data.value == undefined) {
-        throw new Error("Value not defined");
+    if(data.score == undefined) {
+        throw new Error("Score not defined");
     }
     if(data.name == undefined) {
         throw new Error("Username not defined");
@@ -35,7 +35,7 @@ app.post("/ranking", (req, res) => {
 
     // ランキングソート
     ranking.sort((a, b) => {
-        let dif = b.value - a.value;
+        let dif = b.score - a.score;
         if(dif == 0) {
             return a.time - b.time;
         }

@@ -20,9 +20,9 @@ p {
     display: none;
 
     background-image: 
-        linear-gradient(90deg, transparent calc(100% - 1px), black 100%),
-        linear-gradient(0deg, transparent calc(100% - 1px), black 100%);
-    background-size: 20% 20%;
+        linear-gradient(90deg, transparent 99%, black 100%),
+        linear-gradient(0deg, transparent 99%, black 100%);
+    background-size: 25% 25%;
 }
 
 #ranking {
@@ -54,6 +54,8 @@ p {
     margin-top: 2vh;
     margin-bottom: 2vh;
     padding: 1vh;
+
+    cursor: pointer;
 }
 #button:active {
     background-color: #a97451;
