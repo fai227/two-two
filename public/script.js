@@ -254,7 +254,7 @@ function drawBlock(x, y, value, size) {
     const textWidth = halfBoxSize * 2 * textWidthPercentage;
     context.fillStyle = "white";
     context.font = `${fontSize}px 'MainFont'`;
-    context.strokeText(displayValue,centerX, centerY, textWidth);
+    context.strokeText(displayValue, centerX, centerY, textWidth);
     context.fillText(displayValue, centerX, centerY, textWidth);
 }
 
@@ -299,15 +299,15 @@ function touchEnd(e) {
     let difY = e.changedTouches[0].clientY - positions.y;
 
     let squereSize = (canvas.width / 5); squereSize *= squereSize;
-    if(difX * difX + difY * difY < squereSize) return;
+    if (difX * difX + difY * difY < squereSize) return;
 
     // 左右移動
-    if(Math.abs(difX) > Math.abs(difY)) {
+    if (Math.abs(difX) > Math.abs(difY)) {
         (difX > 0) ? moveRight() : moveLeft();
     }
     // 上下移動
     else {
-        (difY > 0) ? moveDown() : moveUp();        
+        (difY > 0) ? moveDown() : moveUp();
     }
 
     positions = {};
@@ -344,7 +344,7 @@ function keyDown(e) {
 
 // #region 移動関数
 function moveRight() {
-    // ブロックを左から順にソートする
+    // ブロックを右から順にソートする
     blocks.sort((a, b) => {
         return b.getTargetPosition()[0] - a.getTargetPosition()[0];
     });
@@ -364,7 +364,7 @@ function moveLeft() {
     beforeMove();
 }
 function moveUp() {
-    // ブロックを下から順にソートする
+    // ブロックを上から順にソートする
     blocks.sort((a, b) => {
         return a.getTargetPosition()[1] - b.getTargetPosition()[1];
     });
@@ -400,7 +400,7 @@ function beforeMove() {
     });
 
     // ゲームオーバー判定
-    if(blockArray.length == 0) {
+    if (blockArray.length == 0) {
         finishGame();
     }
 
@@ -415,17 +415,27 @@ function beforeMove() {
 }
 async function finishGame() {
     alert(`ゲーム終了\nScore: ${score}`);
-    let result = await fetch(
-        rankingURL,
-        {
-            method: 'POST', 
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: `{"score":${score},"name":"${username}","time":${Math.floor(performance.now()/1000)}}`
+    while (true) {
+        try {
+            let result = await fetch(
+                rankingURL,
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: `{"score":${score},"name":"${username}","time":${Math.floor(performance.now() / 1000)}}`
+                }
+            );
+
+            break;
+        } catch (e) {
+            let yes = confirm("ランキング反映中にエラーが発生しました。リトライしますか？");
+            if (!yes) {
+                break;
+            }
         }
-    );
-    localStorage.removeItem("data");
+    }
     location.reload();
 }
 // #endregion
@@ -491,10 +501,10 @@ function checkBlocks(moveX, moveY) {
 
 let maxValue = 1;
 function addScore(value) {
-    if(value > maxValue) maxValue = value;
+    if (value > maxValue) maxValue = value;
 
     let point = 1;
-    for(let i = 0; i < value - 1; i++) {
+    for (let i = 0; i < value - 1; i++) {
         point *= 2;
     }
 
@@ -526,10 +536,10 @@ function getNewBlockValue() {
 }
 
 function getName() {
-    if(username == undefined) {
+    if (username == undefined) {
         username = prompt("ユーザー名を英数字で入力してください。");
     }
-    while(!username || !username.match(/^[A-Za-z0-9]*$/)) {
+    while (!username || !username.match(/^[A-Za-z0-9]*$/)) {
         username = prompt("半角英数字で入力してください。（すべて大文字で表示されます。）");
     }
     localStorage.setItem("name", username);
@@ -543,19 +553,19 @@ function resetName() {
 // #region ランキング表示関数
 async function setRanking(data) {
     // 引数がないときは取得
-    if(data == undefined) {
+    if (data == undefined) {
         let result = await fetch(rankingURL);
         data = await result.json();
     }
-    
+
     // ヘッダー設置
     let element = document.getElementById("ranking");
     element.innerHTML = "<h1>ranking</h1>";
 
     // ランキング表示
     data.forEach((datum, i) => {
-        let result = `<div id="ranking" class="border rank${i+1}">`;
-        result += `<h2>${i+1}. ${datum.name}</h2>`;
+        let result = `<div id="ranking" class="border rank${i + 1}">`;
+        result += `<h2>${i + 1}. ${datum.name}</h2>`;
         result += `<p>score: ${datum.score}&nbsp;&nbsp;&nbsp;&nbsp;(${datum.time} sec)</p>`;
         result += "</div>";
 
@@ -579,15 +589,15 @@ async function main() {
 
     // name設定
     username = localStorage.getItem("name");
-    if(username == undefined) {
+    if (username == undefined) {
         getName();
     }
-    
+
     // 操作方法を表示
-    if(navigator.userAgent.match(/(iPhone|iPod|Android.*Mobile)/i)){
+    if (navigator.userAgent.match(/(iPhone|iPod|Android.*Mobile)/i)) {
         // スマホ（iPhone・Androidスマホ）の場合の処理を記述
         document.getElementById("spControll").style.display = "block";
-    }else{
+    } else {
         // PC・タブレットの場合の処理を記述
         document.getElementById("pcControll").style.display = "block";
     }

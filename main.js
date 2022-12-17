@@ -20,13 +20,13 @@ app.post("/ranking", (req, res) => {
     let data = req.body;
 
     // undefined チェック
-    if(data.score == undefined) {
+    if (data.score == undefined) {
         throw new Error("Score not defined");
     }
-    if(data.name == undefined) {
+    if (data.name == undefined) {
         throw new Error("Username not defined");
     }
-    if(data.time == undefined) {
+    if (data.time == undefined) {
         throw new Error("Time not defined");
     }
 
@@ -36,18 +36,18 @@ app.post("/ranking", (req, res) => {
     // ランキングソート
     ranking.sort((a, b) => {
         let dif = b.score - a.score;
-        if(dif == 0) {
+        if (dif == 0) {
             return a.time - b.time;
         }
         return dif;
     });
 
-    fs.writeFileSync(rankingFileName, JSON.stringify(ranking));
-
     // 上位のみ残す
-    while(ranking.length > rankingNum) {
+    while (ranking.length > rankingNum) {
         ranking.pop();
     }
+
+    fs.writeFileSync(rankingFileName, JSON.stringify(ranking));
 
     // 送信
     res.json(ranking);
