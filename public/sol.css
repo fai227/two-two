@@ -1,0 +1,31 @@
+input {
+    font-family: MainFont;
+    height: 2em;
+    font-size: 1.5em;
+    width: 10vw;
+
+}
+
+h3 {
+    display: inline-block;
+    background-color: #E8F3D6;
+    padding: 2vw;
+}
+
+button {
+    background-color: #FAAB78;
+
+    display: inline-block;
+    font-size: 4vh;
+
+    margin-top: 2vh;
+    margin-bottom: 2vh;
+    padding: 1vh;
+
+    cursor: pointer;
+    font-family: MainFont;
+}
+
+button:active {
+    background-color: #a97451;
+}
