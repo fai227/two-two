@@ -422,14 +422,11 @@ function addScore(value) {
     animationElement.classList.add("animation");
 }
 
-function getNewBlockValue(value) {
-    if (value == undefined) {
-        value = maxValue;
-    }
+function getNewBlockValue() {
     let array = [];
     let rand = Math.random();
     let ratio = 0;
-    for (let i = 1; i < value; i++) {
+    for (let i = 1; i < maxValue; i++) {
         let x = 1;
         for (let s = 0; s < i; s++) {
             x *= 2;
@@ -440,7 +437,7 @@ function getNewBlockValue(value) {
             return i;
         }
     }
-    return value || 1;
+    return maxValue || 1;
 }
 // #endregion
 
@@ -495,7 +492,8 @@ function thinkNext() {
     }, thinkingInterval);
 }
 
-let maxSearch = 5;
+let maxSearch = 6;
+let trial = 10;
 function think() {
     let blockGrid = [[], [], [], []];
     blocks.forEach(block => {
@@ -503,33 +501,65 @@ function think() {
         blockGrid[y][x] = block.getValue();
     })
 
-    let upWorth = checkUp(blockGrid, 1);
-    let downWorth = checkDown(blockGrid, 1);
-    let rightWorth = checkRight(blockGrid, 1);
-    let leftWorth = checkLeft(blockGrid, 1);
+    let upWorth = 0;
+    let downWorth = 0;
+    let rightWorth = 0;
+    let leftWorth = 0;
+    for (let i = 0; i < trial; i++) {
+        upWorth += checkUp(blockGrid, 1);
+        downWorth += checkDown(blockGrid, 1);
+        rightWorth += checkRight(blockGrid, 1);
+        leftWorth += checkLeft(blockGrid, 1);
+    }
+    let min = Math.min(upWorth, downWorth, rightWorth, leftWorth);
+
+    switch (min) {
+        case upWorth:
+            moveUp();
+            break;
+
+        case downWorth:
+            moveDown();
+            break;
+
+        case rightWorth:
+            moveRight();
+            break;
+
+        default:
+            moveLeft();
+            break;
+    }
+
 }
 
 function checkNext(blockGrid, num) {
+    if (num >= maxSearch) return 0;
+
+    // 新しくできる数値挿入（フルになるときはMAX_VALUEを返す）
+    let emptyGrid = [];
+    for (let y = 0; y < column; y++) {
+        for (let x = 0; x < row; x++) {
+            if (blockGrid[y][x] == undefined) {
+                emptyGrid.push({ x: x, y: y });
+            }
+        }
+    }
+    if (emptyGrid.length == 0) return 1000;
+    let newBlockGrid = getRandomElement(emptyGrid);
+    blockGrid[newBlockGrid.y][newBlockGrid.x] = getNewBlockValue();  //最大値探す必要あり
+
     // 次を探索
-    let min = column * row;
     let nextUpWorth = checkUp(blockGrid, num + 1);
-    if (nextUpWorth < min) min = nextUpWorth;
     let nextDownWorth = checkDown(blockGrid, num + 1);
-    if (nextDownWorth < min) min = nextDownWorth;
     let nextRightWorth = checkDown(blockGrid, num + 1);
-    if (nextRightWorth < min) min = nextRightWorth;
     let nextLeftWorth = checkLeft(blockGrid, num + 1);
-    if (nextLeftWorth < min) min = nextLeftWorth;
 
     // 最小値を返す
-    return min;
+    return Math.min(nextUpWorth, nextDownWorth, nextRightWorth, nextLeftWorth);
 }
 
 function checkUp(blockGrid, num) {
-    if (num > maxSearch) {
-        return 0;
-    }
-
     // 配列をコピー
     let nextBlockGrid = [];
     for (let y = 0; y < column; y++) {
@@ -539,11 +569,206 @@ function checkUp(blockGrid, num) {
         }
     }
 
-    checkNext(nextBlockGrid, num);
+    // 上の操作の計算
+    for (let y = 1; y < column; y++) {
+        for (let x = 0; x < row; x++) {
+            if (nextBlockGrid[y][x] == undefined) continue;  // 数値がないときは動かさない
+            for (let i = y - 1; ; i--) {
+                if (i < 0) {  // 範囲外の時
+                    // 端っこに置く
+                    nextBlockGrid[i + 1][x] = nextBlockGrid[y][x];
+                    nextBlockGrid[y][x] = null;
+                    break;
+                }
+                if (nextBlockGrid[i][x] != undefined) {  // 数字があるとき
+                    if (nextBlockGrid[i][x] == nextBlockGrid[y][x]) {  // 数字が同じなので結合
+                        nextBlockGrid[i][x]++;
+                        nextBlockGrid[y][x] = null;
+
+                        break;
+                    }
+                    else {
+                        // 入れ替え
+                        let tmp = nextBlockGrid[i + 1][x];
+                        nextBlockGrid[i + 1][x] = nextBlockGrid[y][x];
+                        nextBlockGrid[y][x] = tmp;
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    // 枚数計算
+    let length = 0;
+    for (let y = 0; y < column; y++) {
+        for (let x = 0; x < row; x++) {
+            if (nextBlockGrid[y][x] != undefined) length++;
+        }
+    }
+
+    return length + checkNext(nextBlockGrid, num);
+}
+
+function checkDown(blockGrid, num) {
+    // 配列をコピー
+    let nextBlockGrid = [];
+    for (let y = 0; y < column; y++) {
+        nextBlockGrid[y] = [];
+        for (let x = 0; x < row; x++) {
+            nextBlockGrid[y][x] = blockGrid[y][x];
+        }
+    }
+
+    // 下の操作の計算
+    for (let y = column - 2; y >= 0; y--) {
+        for (let x = 0; x < row; x++) {
+            if (nextBlockGrid[y][x] == undefined) continue;  // 数値がないときは動かさない
+            for (let i = y + 1; ; i++) {
+                if (i >= column) {  // 範囲外の時
+                    // 端っこに置く
+                    nextBlockGrid[i - 1][x] = nextBlockGrid[y][x];
+                    nextBlockGrid[y][x] = null;
+                    break;
+                }
+                if (nextBlockGrid[i][x] != undefined) {  // 数字があるとき
+                    if (nextBlockGrid[i][x] == nextBlockGrid[y][x]) {  // 数字が同じなので結合
+                        nextBlockGrid[i][x]++;
+                        nextBlockGrid[y][x] = null;
+
+                        break;
+                    }
+                    else {
+                        // 入れ替え
+                        let tmp = nextBlockGrid[i - 1][x];
+                        nextBlockGrid[i - 1][x] = nextBlockGrid[y][x];
+                        nextBlockGrid[y][x] = tmp;
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    // 枚数計算
+    let length = 0;
+    for (let y = 0; y < column; y++) {
+        for (let x = 0; x < row; x++) {
+            if (nextBlockGrid[y][x] != undefined) length++;
+        }
+    }
+
+    return length + checkNext(nextBlockGrid, num);
+}
+
+function checkLeft(blockGrid, num) {
+    // 配列をコピー
+    let nextBlockGrid = [];
+    for (let y = 0; y < column; y++) {
+        nextBlockGrid[y] = [];
+        for (let x = 0; x < row; x++) {
+            nextBlockGrid[y][x] = blockGrid[y][x];
+        }
+    }
+
+    // 左の操作の計算
+    for (let y = 0; y < column; y++) {
+        for (let x = 1; x < row; x++) {
+            if (nextBlockGrid[y][x] == undefined) continue;  // 数値がないときは動かさない
+            for (let i = x - 1; ; i--) {
+                if (i < 0) {  // 範囲外の時
+                    // 端っこに置く
+                    nextBlockGrid[y][i + 1] = nextBlockGrid[y][x];
+                    nextBlockGrid[y][x] = null;
+                    break;
+                }
+                if (nextBlockGrid[y][i] != undefined) {  // 数字があるとき
+                    if (nextBlockGrid[y][i] == nextBlockGrid[y][x]) {  // 数字が同じなので結合
+                        nextBlockGrid[y][i]++;
+                        nextBlockGrid[y][x] = null;
+
+                        break;
+                    }
+                    else {
+                        // 入れ替え
+                        let tmp = nextBlockGrid[y][i + 1];
+                        nextBlockGrid[y][i + 1] = nextBlockGrid[y][x];
+                        nextBlockGrid[y][x] = tmp;
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    // 枚数計算
+    let length = 0;
+    for (let y = 0; y < column; y++) {
+        for (let x = 0; x < row; x++) {
+            if (nextBlockGrid[y][x] != undefined) length++;
+        }
+    }
+
+    return length + checkNext(nextBlockGrid, num);
+}
+
+function checkRight(blockGrid, num) {
+    // 配列をコピー
+    let nextBlockGrid = [];
+    for (let y = 0; y < column; y++) {
+        nextBlockGrid[y] = [];
+        for (let x = 0; x < row; x++) {
+            nextBlockGrid[y][x] = blockGrid[y][x];
+        }
+    }
+
+    // 右の操作の計算
+    for (let y = 0; y < column; y++) {
+        for (let x = row - 2; x >= 0; x--) {
+            if (nextBlockGrid[y][x] == undefined) continue;  // 数値がないときは動かさない
+            for (let i = x + 1; ; i++) {
+                if (i >= row) {  // 範囲外の時
+                    // 端っこに置く
+                    nextBlockGrid[y][i - 1] = nextBlockGrid[y][x];
+                    nextBlockGrid[y][x] = null;
+                    break;
+                }
+                if (nextBlockGrid[y][i] != undefined) {  // 数字があるとき
+                    if (nextBlockGrid[y][i] == nextBlockGrid[y][x]) {  // 数字が同じなので結合
+                        nextBlockGrid[y][i]++;
+                        nextBlockGrid[y][x] = null;
+
+                        break;
+                    }
+                    else {
+                        // 入れ替え
+                        let tmp = nextBlockGrid[y][i - 1];
+                        nextBlockGrid[y][i - 1] = nextBlockGrid[y][x];
+                        nextBlockGrid[y][x] = tmp;
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    // 枚数計算
+    let length = 0;
+    for (let y = 0; y < column; y++) {
+        for (let x = 0; x < row; x++) {
+            if (nextBlockGrid[y][x] != undefined) length++;
+        }
+    }
+
+    return length + checkNext(nextBlockGrid, num);
 }
 
 function finishGame() {
-    alert(`ゲーム終了\nScore: ${score}`);
-    location.reload();
+    if (confirm(`ゲーム終了\nScore: ${score}`)) {
+        location.reload();
+    }
+}
+function back() {
+    location.href = "./";
 }
 // #endregion

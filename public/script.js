@@ -548,6 +548,9 @@ function resetName() {
     username = undefined;
     getName();
 }
+function seeSolution() {
+    location.href = "./sol.html";
+}
 // #endregion
 
 // #region ランキング表示関数

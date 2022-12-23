@@ -85,23 +85,6 @@ p {
     border-color: black;
 }
 
-#button {
-    background-color: #FAAB78;
-
-    display: inline-block;
-    font-size: 4vh;
-
-    margin-top: 2vh;
-    margin-bottom: 2vh;
-    padding: 1vh;
-
-    cursor: pointer;
-}
-
-#button:active {
-    background-color: #a97451;
-}
-
 #resetButton {
     position: absolute;
     right: 0.25vw;
@@ -125,4 +108,22 @@ p {
 
 .rank3 {
     background: linear-gradient(45deg, #a65b00 0%, #f77823 45%, #ffc583 70%, #f77823 85%, #a65b00 90% 100%);
+}
+
+button {
+    background-color: #FAAB78;
+
+    display: inline-block;
+    font-size: 4vh;
+
+    margin-top: 2vh;
+    margin-bottom: 2vh;
+    padding: 1vh;
+
+    cursor: pointer;
+    font-family: MainFont;
+}
+
+button:active {
+    background-color: #a97451;
 }
