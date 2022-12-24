@@ -545,7 +545,6 @@ function checkNext(blockGrid, num) {
             }
         }
     }
-    if (emptyGrid.length == 0) return 1000;
     let newBlockGrid = getRandomElement(emptyGrid);
     blockGrid[newBlockGrid.y][newBlockGrid.x] = getNewBlockValue();  //最大値探す必要あり
 
@@ -599,15 +598,7 @@ function checkUp(blockGrid, num) {
         }
     }
 
-    // 枚数計算
-    let length = 0;
-    for (let y = 0; y < column; y++) {
-        for (let x = 0; x < row; x++) {
-            if (nextBlockGrid[y][x] != undefined) length++;
-        }
-    }
-
-    return length + checkNext(nextBlockGrid, num);
+    return evaluate(nextBlockGrid, num);
 }
 
 function checkDown(blockGrid, num) {
@@ -650,15 +641,7 @@ function checkDown(blockGrid, num) {
         }
     }
 
-    // 枚数計算
-    let length = 0;
-    for (let y = 0; y < column; y++) {
-        for (let x = 0; x < row; x++) {
-            if (nextBlockGrid[y][x] != undefined) length++;
-        }
-    }
-
-    return length + checkNext(nextBlockGrid, num);
+    return evaluate(nextBlockGrid, num);
 }
 
 function checkLeft(blockGrid, num) {
@@ -701,15 +684,7 @@ function checkLeft(blockGrid, num) {
         }
     }
 
-    // 枚数計算
-    let length = 0;
-    for (let y = 0; y < column; y++) {
-        for (let x = 0; x < row; x++) {
-            if (nextBlockGrid[y][x] != undefined) length++;
-        }
-    }
-
-    return length + checkNext(nextBlockGrid, num);
+    return evaluate(nextBlockGrid, num);
 }
 
 function checkRight(blockGrid, num) {
@@ -752,15 +727,20 @@ function checkRight(blockGrid, num) {
         }
     }
 
+    return evaluate(nextBlockGrid, num);
+}
+
+function evaluate(blockGrid, num) {
     // 枚数計算
     let length = 0;
     for (let y = 0; y < column; y++) {
         for (let x = 0; x < row; x++) {
-            if (nextBlockGrid[y][x] != undefined) length++;
+            if (blockGrid[y][x] != undefined) length++;
         }
     }
+    if (length == row * column) return 1000 * (maxSearch + 10 - num);
 
-    return length + checkNext(nextBlockGrid, num);
+    return length + checkNext(blockGrid, num);
 }
 
 function finishGame() {
