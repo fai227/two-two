@@ -748,6 +748,7 @@ function finishGame() {
         location.reload();
     }
 }
+
 function back() {
     location.href = "./";
 }

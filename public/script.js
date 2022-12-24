@@ -412,6 +412,7 @@ function beforeMove() {
     // 時間を設定し移動開始
     movingStartTime = performance.now();
     moveBlock();
+    soundSlide();
 }
 async function finishGame() {
     alert(`ゲーム終了\nScore: ${score}`);
@@ -501,7 +502,10 @@ function checkBlocks(moveX, moveY) {
 
 let maxValue = 1;
 function addScore(value) {
-    if (value > maxValue) maxValue = value;
+    if (value > maxValue) {
+        maxValue = value;
+        soundHighScore();
+    }
 
     let point = 1;
     for (let i = 0; i < value - 1; i++) {
@@ -600,6 +604,7 @@ async function main() {
     if (navigator.userAgent.match(/(iPhone|iPod|Android.*Mobile)/i)) {
         // スマホ（iPhone・Androidスマホ）の場合の処理を記述
         document.getElementById("spControll").style.display = "block";
+        document.getElementById("resetButton").style.display = "none";
     } else {
         // PC・タブレットの場合の処理を記述
         document.getElementById("pcControll").style.display = "block";
@@ -634,5 +639,18 @@ function getColor(value) {
     let b = Math.floor(blockColor.b * ratio);
 
     return `rgb(${r},${g},${b})`;
+}
+// #endregion
+
+// #region サウンド関数
+var slideSound = new Audio("./slide.mp3");
+var highScoreSound = new Audio("./high.wav");
+function soundSlide() {
+    slideSound.currentTime = 0;
+    slideSound.play();
+}
+function soundHighScore() {
+    highScoreSound.currentTime = 0;
+    highScoreSound.play();
 }
 // #endregion
