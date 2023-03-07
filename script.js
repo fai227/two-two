@@ -570,7 +570,7 @@ async function setRanking() {
 
     // ヘッダー設置
     let element = document.getElementById("ranking");
-    element.innerHTML = "<h1>ranking</h1>";
+    element.innerHTML = "<h1 style='margin-bottom:5px'>ranking</h1>";
 
     // 表生成
     let table = document.createElement("table");
@@ -585,6 +585,7 @@ async function setRanking() {
     let weeklyH2 = document.createElement("h2");
     weeklyH2.innerHTML = "Weekly";
     weeklyHeader.appendChild(weeklyH2);
+    weeklyH2.classList.add("rankingHeader");
     headerRow.appendChild(weeklyHeader);
 
     // 全体ヘッダー生成
@@ -592,6 +593,7 @@ async function setRanking() {
     let totalH2 = document.createElement("h2");
     totalH2.innerHTML = "Total";
     totalHeader.appendChild(totalH2);
+    totalH2.classList.add("rankingHeader");
     headerRow.appendChild(totalHeader);
 
     // データ挿入
