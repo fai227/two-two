@@ -2,6 +2,7 @@
 const canvas = document.getElementById("canvas");
 const context = canvas.getContext("2d");
 
+
 // 色の設定
 const blockColor = { r: 255, g: 220, b: 169 };
 const colorMax = 20;
@@ -412,7 +413,6 @@ function beforeMove() {
     // 時間を設定し移動開始
     movingStartTime = performance.now();
     moveBlock();
-    soundSlide();
 }
 async function finishGame() {
     alert(`ゲーム終了\nScore: ${score}`);
@@ -510,7 +510,6 @@ let maxValue = 1;
 function addScore(value) {
     if (value > maxValue) {
         maxValue = value;
-        soundHighScore();
     }
 
     let point = 1;
@@ -724,18 +723,5 @@ function getColor(value) {
     let b = Math.floor(blockColor.b * ratio);
 
     return `rgb(${r},${g},${b})`;
-}
-// #endregion
-
-// #region サウンド関数
-var slideSound = new Audio("./slide.mp3");
-var highScoreSound = new Audio("./high.wav");
-function soundSlide() {
-    slideSound.currentTime = 0;
-    slideSound.play();
-}
-function soundHighScore() {
-    highScoreSound.currentTime = 0;
-    highScoreSound.play();
 }
 // #endregion
