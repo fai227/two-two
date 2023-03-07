@@ -71,13 +71,6 @@ p {
     position: relative;
 }
 
-#ranking>div {
-    display: inline-block;
-    width: 80%;
-    margin: 2vh;
-    background-color: cornsilk;
-}
-
 .border {
     border-width: min(1vw, 1vh);
     border-radius: min(1vw, 1vh);
@@ -126,4 +119,22 @@ button {
 
 button:active {
     background-color: #a97451;
+}
+
+table {
+    margin: auto;
+    width: 95%;
+}
+
+td {
+    width: 48%;
+}
+
+.score {
+    background-color: cornsilk;
+}
+
+.information {
+    margin-top: 5px;
+    margin-bottom: 5px;
 }

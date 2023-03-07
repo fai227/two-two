@@ -106,7 +106,7 @@ let score = 0;
 let row = 4;  //行
 let column = 4;  //列
 
-const rankingURL = location.href.split("?")[0] + "ranking";
+const rankingURL = "https://data-center.azurewebsites.net/two-two/ranking";
 
 // #region キャンバス関数
 let movingStartTime = null;
@@ -425,9 +425,15 @@ async function finishGame() {
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: `{"score":${score},"name":"${username}","time":${Math.floor(performance.now() / 1000)}}`
+                    body: JSON.stringify({
+                        "score": score,
+                        "name": username,
+                        "time": Math.floor(performance.now() / 1000)
+                    })
                 }
             );
+
+            if (!result.ok) throw new Error(result.statusText);
 
             break;
         } catch (e) {
@@ -558,26 +564,103 @@ function seeSolution() {
 // #endregion
 
 // #region ランキング表示関数
-async function setRanking(data) {
-    // 引数がないときは取得
-    if (data == undefined) {
-        let result = await fetch(rankingURL);
-        data = await result.json();
-    }
+async function setRanking() {
+    let result = await fetch(rankingURL);
+    let data = await result.json();
 
     // ヘッダー設置
     let element = document.getElementById("ranking");
     element.innerHTML = "<h1>ranking</h1>";
 
-    // ランキング表示
-    data.forEach((datum, i) => {
-        let result = `<div id="ranking" class="border rank${i + 1}">`;
-        result += `<h2>${i + 1}. ${datum.name}</h2>`;
-        result += `<p>score: ${datum.score}&nbsp;&nbsp;&nbsp;&nbsp;(${datum.time} sec)</p>`;
-        result += "</div>";
+    // 表生成
+    let table = document.createElement("table");
+    element.appendChild(table);
 
-        element.innerHTML += result;
-    });
+    // ヘッダー生成
+    let headerRow = document.createElement("tr");
+    table.appendChild(headerRow);
+
+    // 週間ヘッダー生成
+    let weeklyHeader = document.createElement("th");
+    let weeklyH2 = document.createElement("h2");
+    weeklyH2.innerHTML = "Weekly";
+    weeklyHeader.appendChild(weeklyH2);
+    headerRow.appendChild(weeklyHeader);
+
+    // 全体ヘッダー生成
+    let totalHeader = document.createElement("th");
+    let totalH2 = document.createElement("h2");
+    totalH2.innerHTML = "Total";
+    totalHeader.appendChild(totalH2);
+    headerRow.appendChild(totalHeader);
+
+    // データ挿入
+    let lentgh = data.total.length > data.week.length ? data.total.length : data.week.length;
+    for (let i = 0; i < lentgh; i++) {
+        // 行生成
+        let row = document.createElement("tr");
+        table.appendChild(row);
+
+        // Weekly追加
+        let weekly = document.createElement("td");
+        row.appendChild(weekly);
+        // スコア追加
+        if (data.week.length > i) {
+            let datum = data.week[i];
+            let div = document.createElement("div");
+            div.classList.add("border");
+            div.classList.add("score");
+            div.classList.add(`rank${i + 1}`);
+            weekly.appendChild(div);
+
+            // 名前表示
+            let h2 = document.createElement("h2");
+            h2.innerHTML = `${i + 1}. ${datum.name}`;
+            div.appendChild(h2);
+
+            // スコア表示
+            let scoreP = document.createElement("p");
+            scoreP.innerHTML = "score: " + datum.score;
+            scoreP.classList.add("information");
+            div.appendChild(scoreP);
+
+            // 時間表示
+            let timeP = document.createElement("p");
+            timeP.classList.add("information");
+            timeP.innerHTML = `(${datum.time} sec)`;
+            div.appendChild(timeP);
+        }
+
+        // total追加
+        let total = document.createElement("td");
+        row.appendChild(total);
+        // スコア追加
+        if (data.total.length > i) {
+            let datum = data.total[i];
+            let div = document.createElement("div");
+            div.classList.add("border");
+            div.classList.add("score");
+            div.classList.add(`rank${i + 1}`);
+            total.appendChild(div);
+
+            // 名前表示
+            let h2 = document.createElement("h2");
+            h2.innerHTML = `${i + 1}. ${datum.name}`;
+            div.appendChild(h2);
+
+            // スコア表示
+            let scoreP = document.createElement("p");
+            scoreP.innerHTML = "score: " + datum.score;
+            scoreP.classList.add("information");
+            div.appendChild(scoreP);
+
+            // 時間表示
+            let timeP = document.createElement("p");
+            timeP.innerHTML = `(${datum.time} sec)`;
+            timeP.classList.add("information");
+            div.appendChild(timeP);
+        }
+    }
 }
 // #endregion
 

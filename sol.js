@@ -750,6 +750,6 @@ function finishGame() {
 }
 
 function back() {
-    location.href = "./";
+    location.href = "./index.html";
 }
 // #endregion
