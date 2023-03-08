@@ -564,108 +564,107 @@ function seeSolution() {
 
 // #region ランキング表示関数
 async function setRanking() {
-    try {
-        let result = await fetch(rankingURL);
-        let data = await result.json();
+    let result = await fetch(rankingURL);
+    let data = await result.json();
 
-        // ヘッダー設置
-        let element = document.getElementById("ranking");
-        element.innerHTML = "<h1 style='margin-bottom:5px'>ranking</h1>";
+    // ヘッダー設置
+    let element = document.getElementById("ranking");
+    element.innerHTML = "<h1 style='margin-bottom:5px'>ranking</h1>";
 
-        // 表生成
-        let table = document.createElement("table");
-        element.appendChild(table);
+    // 表生成
+    let table = document.createElement("table");
+    element.appendChild(table);
 
-        // ヘッダー生成
-        let headerRow = document.createElement("tr");
-        table.appendChild(headerRow);
+    // ヘッダー生成
+    let headerRow = document.createElement("tr");
+    table.appendChild(headerRow);
 
-        // 週間ヘッダー生成
-        let weeklyHeader = document.createElement("th");
-        let weeklyH2 = document.createElement("h2");
-        weeklyH2.innerHTML = "Weekly";
-        weeklyHeader.appendChild(weeklyH2);
-        weeklyH2.classList.add("rankingHeader");
-        headerRow.appendChild(weeklyHeader);
+    // 週間ヘッダー生成
+    let weeklyHeader = document.createElement("th");
+    let weeklyH2 = document.createElement("h2");
+    weeklyH2.innerHTML = "Weekly";
+    weeklyHeader.appendChild(weeklyH2);
+    weeklyH2.classList.add("rankingHeader");
+    headerRow.appendChild(weeklyHeader);
 
-        // 全体ヘッダー生成
-        let totalHeader = document.createElement("th");
-        let totalH2 = document.createElement("h2");
-        totalH2.innerHTML = "Total";
-        totalHeader.appendChild(totalH2);
-        totalH2.classList.add("rankingHeader");
-        headerRow.appendChild(totalHeader);
+    // 全体ヘッダー生成
+    let totalHeader = document.createElement("th");
+    let totalH2 = document.createElement("h2");
+    totalH2.innerHTML = "Total";
+    totalHeader.appendChild(totalH2);
+    totalH2.classList.add("rankingHeader");
+    headerRow.appendChild(totalHeader);
 
-        // データ挿入
-        let lentgh = data.total.length > data.week.length ? data.total.length : data.week.length;
-        for (let i = 0; i < lentgh; i++) {
-            // 行生成
-            let row = document.createElement("tr");
-            table.appendChild(row);
+    // データ挿入
+    let lentgh = data.total.length > data.week.length ? data.total.length : data.week.length;
+    for (let i = 0; i < lentgh; i++) {
+        // 行生成
+        let row = document.createElement("tr");
+        table.appendChild(row);
 
-            // Weekly追加
-            let weekly = document.createElement("td");
-            row.appendChild(weekly);
-            // スコア追加
-            if (data.week.length > i) {
-                let datum = data.week[i];
-                let div = document.createElement("div");
-                div.classList.add("border");
-                div.classList.add("score");
-                div.classList.add(`rank${i + 1}`);
-                weekly.appendChild(div);
+        // Weekly追加
+        let weekly = document.createElement("td");
+        row.appendChild(weekly);
+        // スコア追加
+        if (data.week.length > i) {
+            let datum = data.week[i];
+            let div = document.createElement("div");
+            div.classList.add("border");
+            div.classList.add("score");
+            div.classList.add(`rank${i + 1}`);
+            weekly.appendChild(div);
 
-                // 名前表示
-                let h2 = document.createElement("h2");
-                h2.innerHTML = `${i + 1}. ${datum.name}`;
-                div.appendChild(h2);
+            // 名前表示
+            let h2 = document.createElement("h2");
+            h2.innerHTML = `${i + 1}. ${datum.name}`;
+            h2.classList.add("rankingHeader");
+            div.appendChild(h2);
 
-                // スコア表示
-                let scoreP = document.createElement("p");
-                scoreP.innerHTML = "score: " + datum.score;
-                scoreP.classList.add("information");
-                div.appendChild(scoreP);
+            // スコア表示
+            let scoreP = document.createElement("p");
+            scoreP.innerHTML = "score: " + datum.score;
+            scoreP.classList.add("information");
+            div.appendChild(scoreP);
 
-                // 時間表示
-                let timeP = document.createElement("p");
-                timeP.classList.add("information");
-                timeP.innerHTML = `(${datum.time} sec)`;
-                div.appendChild(timeP);
-            }
-
-            // total追加
-            let total = document.createElement("td");
-            row.appendChild(total);
-            // スコア追加
-            if (data.total.length > i) {
-                let datum = data.total[i];
-                let div = document.createElement("div");
-                div.classList.add("border");
-                div.classList.add("score");
-                div.classList.add(`rank${i + 1}`);
-                total.appendChild(div);
-
-                // 名前表示
-                let h2 = document.createElement("h2");
-                h2.innerHTML = `${i + 1}. ${datum.name}`;
-                div.appendChild(h2);
-
-                // スコア表示
-                let scoreP = document.createElement("p");
-                scoreP.innerHTML = "score: " + datum.score;
-                scoreP.classList.add("information");
-                div.appendChild(scoreP);
-
-                // 時間表示
-                let timeP = document.createElement("p");
-                timeP.innerHTML = `(${datum.time} sec)`;
-                timeP.classList.add("information");
-                div.appendChild(timeP);
-            }
+            // 時間表示
+            let timeP = document.createElement("p");
+            timeP.innerHTML = `(${datum.time} sec)`;
+            timeP.classList.add("information");
+            timeP.classList.add("sec");
+            div.appendChild(timeP);
         }
-    }
-    catch (e) {
-        alert(e);
+
+        // total追加
+        let total = document.createElement("td");
+        row.appendChild(total);
+        // スコア追加
+        if (data.total.length > i) {
+            let datum = data.total[i];
+            let div = document.createElement("div");
+            div.classList.add("border");
+            div.classList.add("score");
+            div.classList.add(`rank${i + 1}`);
+            total.appendChild(div);
+
+            // 名前表示
+            let h2 = document.createElement("h2");
+            h2.innerHTML = `${i + 1}. ${datum.name}`;
+            h2.classList.add("rankingHeader");
+            div.appendChild(h2);
+
+            // スコア表示
+            let scoreP = document.createElement("p");
+            scoreP.innerHTML = "score: " + datum.score;
+            scoreP.classList.add("information");
+            div.appendChild(scoreP);
+
+            // 時間表示
+            let timeP = document.createElement("p");
+            timeP.innerHTML = `(${datum.time} sec)`;
+            timeP.classList.add("information");
+            timeP.classList.add("sec");
+            div.appendChild(timeP);
+        }
     }
 }
 // #endregion
@@ -693,7 +692,6 @@ async function main() {
     if (navigator.userAgent.match(/(iPhone|iPod|Android.*Mobile)/i)) {
         // スマホ（iPhone・Androidスマホ）の場合の処理を記述
         document.getElementById("spControll").style.display = "block";
-        document.getElementById("resetButton").style.display = "none";
     } else {
         // PC・タブレットの場合の処理を記述
         document.getElementById("pcControll").style.display = "block";

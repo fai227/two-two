@@ -78,19 +78,6 @@ p {
     border-color: black;
 }
 
-#resetButton {
-    position: absolute;
-    right: 0.25vw;
-    top: 0.25vh;
-
-    width: min(5vw, 5vh);
-    background-color: white;
-}
-
-#resetButton:active {
-    background-color: gray;
-}
-
 .rank1 {
     background: linear-gradient(45deg, #B67B03 0%, #DAAF08 45%, #FEE9A0 70%, #DAAF08 85%, #B67B03 90% 100%);
 }
@@ -142,4 +129,8 @@ td {
 .rankingHeader {
     margin-top: 10px;
     margin-bottom: 10px;
+}
+
+.sec {
+    font-size: 50%;
 }
