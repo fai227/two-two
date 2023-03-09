@@ -416,30 +416,32 @@ function beforeMove() {
 }
 async function finishGame() {
     alert(`ゲーム終了\nScore: ${score}`);
-    while (true) {
-        try {
-            let result = await fetch(
-                rankingURL,
-                {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        "score": score,
-                        "name": username,
-                        "time": Math.floor(performance.now() / 1000)
-                    })
-                }
-            );
+    if (lowest <= score) {
+        while (true) {
+            try {
+                let result = await fetch(
+                    rankingURL,
+                    {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            "score": score,
+                            "name": username,
+                            "time": Math.floor(performance.now() / 1000)
+                        })
+                    }
+                );
 
-            if (!result.ok) throw new Error(result.statusText);
+                if (!result.ok) throw new Error(result.statusText);
 
-            break;
-        } catch (e) {
-            let yes = confirm("ランキング反映中にエラーが発生しました。リトライしますか？");
-            if (!yes) {
                 break;
+            } catch (e) {
+                let yes = confirm("ランキング反映中にエラーが発生しました。リトライしますか？");
+                if (!yes) {
+                    break;
+                }
             }
         }
     }
@@ -665,6 +667,10 @@ async function setRanking() {
             timeP.classList.add("sec");
             div.appendChild(timeP);
         }
+    }
+
+    if (data.week.length == 10) {
+        lowest = Number(data.week[9].score);
     }
 }
 // #endregion
