@@ -102,6 +102,7 @@ class Block {
 let blocks = [];
 
 let score = 0;
+let lowest = 0;
 
 // グリッドサイズ
 let row = 4;  //行
