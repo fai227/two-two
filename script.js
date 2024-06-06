@@ -570,6 +570,10 @@ async function setRanking() {
     let result = await fetch(rankingURL);
     let data = await result.json();
 
+    // 念のためソート
+    data["week"].sort((a, b) => a.score - b.score);
+    data["total"].sort((a, b) => a.score - b.score);
+
     // ヘッダー設置
     let element = document.getElementById("ranking");
     element.innerHTML = "<h1 style='margin-bottom:5px'>ranking</h1>";
