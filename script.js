@@ -571,8 +571,8 @@ async function setRanking() {
     let data = await result.json();
 
     // 念のためソート
-    data["week"].sort((a, b) => a.score - b.score);
-    data["total"].sort((a, b) => a.score - b.score);
+    data["week"].sort((a, b) => b.score - a.score);
+    data["total"].sort((a, b) => b.score - a.score);
 
     // ヘッダー設置
     let element = document.getElementById("ranking");
