@@ -108,7 +108,7 @@ let lowest = 0;
 let row = 4;  //行
 let column = 4;  //列
 
-const rankingURL = "https://data-center.azurewebsites.net/two-two/ranking";
+const rankingURL = "https://vvbasr6ub1.execute-api.ap-northeast-1.amazonaws.com/two-two";
 
 // #region キャンバス関数
 let movingStartTime = null;
