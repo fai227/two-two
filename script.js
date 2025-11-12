@@ -599,7 +599,6 @@ async function main() {
     window.onresize = resetCanvasSize;
     canvas.style.display = "inline-block";
 
-    // name設定
     // 操作方法を表示
     if (navigator.userAgent.match(/(iPhone|iPod|Android.*Mobile)/i)) {
         // スマホ（iPhone・Androidスマホ）の場合の処理を記述
